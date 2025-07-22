@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from model_warehouse.src.models._blocks import Conv1x1
 from model_warehouse.src.models.p2v import VideoEncoder, SimpleDecoder, DecBlock
 from models.SAM import SupervisedAttentionModule
-from models.mynet_parts import (Conv_BN_ReLU, CGSU, Encoder_Block, DPFA, Decoder_Block,
+from models.mynet_parts import (Conv_BN_ReLU, CGSU, Encoder_Block, fm, Decoder_Block,
                                 Changer_channel_exchange, log_feature, CBAM, Encoder_lastBlock)
 from models.exchange import TimeAttention2
 from models.resnetv2 import IA_ResNetV1c
@@ -50,11 +50,11 @@ class MyNet(nn.Module):
         self.de_block2 = Decoder_Block(in_channel=channel_list[3], out_channel=channel_list[2])
         self.de_block3 = Decoder_Block(in_channel=channel_list[2], out_channel=channel_list[1])
 
-        # dpfa
-        self.dpfa1 = DPFA(in_channel=channel_list[4])
-        self.dpfa2 = DPFA(in_channel=channel_list[3])
-        self.dpfa3 = DPFA(in_channel=channel_list[2])
-        self.dpfa4 = DPFA(in_channel=channel_list[1])
+        # fm
+        self.fm1 = fm(in_channel=channel_list[4])
+        self.fm2 = fm(in_channel=channel_list[3])
+        self.fm3 = fm(in_channel=channel_list[2])
+        self.fm4 = fm(in_channel=channel_list[1])
 
         # change path
         # the change block is the same as decoder block
@@ -214,29 +214,29 @@ class MyNet(nn.Module):
         seg_out2 = self.seg_out2(de2_2)
 
         if log:
-            change_5 = self.dpfa1(de1_5, de2_5, log=log, module_name='de1_5_de2_5_dpfa1',
+            change_5 = self.fm1(de1_5, de2_5, log=log, module_name='de1_5_de2_5_fm1',
                                   img_name=img_name)
 
-            change_4 = self.change_block4(change_5, self.dpfa2(de1_4, de2_4, log=log, module_name='de1_4_de2_4_dpfa2',
+            change_4 = self.change_block4(change_5, self.fm2(de1_4, de2_4, log=log, module_name='de1_4_de2_4_fm2',
                                                                img_name=img_name))
             change_4 = self.fuse1(change_4, fmaps[1])
 
-            change_3 = self.change_block3(change_4, self.dpfa3(de1_3, de2_3, log=log, module_name='de1_3_de2_3_dpfa3',
+            change_3 = self.change_block3(change_4, self.fm3(de1_3, de2_3, log=log, module_name='de1_3_de2_3_fm3',
                                                                img_name=img_name))
             change_3 = self.fuse2(change_3, fmaps[0])
 
-            change_2 = self.change_block2(change_3, self.dpfa4(de1_2, de2_2, log=log, module_name='de1_2_de2_2_dpfa4',
+            change_2 = self.change_block2(change_3, self.fm4(de1_2, de2_2, log=log, module_name='de1_2_de2_2_fm4',
                                                                img_name=img_name))
         else:
-            change_5 = self.dpfa1(de1_5, de2_5)
+            change_5 = self.fm1(de1_5, de2_5)
 
-            change_4 = self.change_block4(change_5, self.dpfa2(de1_4, de2_4))
+            change_4 = self.change_block4(change_5, self.fm2(de1_4, de2_4))
             change_4 = self.fuse1(change_4, fmaps[1])
 
-            change_3 = self.change_block3(change_4, self.dpfa3(de1_3, de2_3))
+            change_3 = self.change_block3(change_4, self.fm3(de1_3, de2_3))
             change_3 = self.fuse2(change_3, fmaps[0])
 
-            change_2 = self.change_block2(change_3, self.dpfa4(de1_2, de2_2))
+            change_2 = self.change_block2(change_3, self.fm4(de1_2, de2_2))
 
 
 
