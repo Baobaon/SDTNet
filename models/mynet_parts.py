@@ -30,7 +30,7 @@ class Conv_BN_ReLU(nn.Module):
         return output
 
 
-class CGSU(nn.Module):
+class Conv1(nn.Module):
     """Basic convolution module."""
 
     def __init__(self, in_channel):
@@ -53,7 +53,7 @@ class CGSU(nn.Module):
         return output
 
 
-class CGSU_DOWN(nn.Module):
+class Conv1_DOWN(nn.Module):
     """Basic convolution module with stride=2."""
 
     def __init__(self, in_channel):
@@ -99,8 +99,7 @@ class Changer_channel_exchange(nn.Module):
 
 
 # double pooling fuse attention
-class DPFA(nn.Module):
-    """Fuse two feature into one feature."""
+class FM(nn.Module):
 
     def __init__(self, in_channel):
         super().__init__()
@@ -201,9 +200,9 @@ class Encoder_Block(nn.Module):
 
         assert out_channel == in_channel * 2, 'the out_channel is not in_channel*2 in encoder block'
         self.conv1 = nn.Sequential(
-            CGSU_DOWN(in_channel=in_channel),
-            CGSU(in_channel=out_channel),
-            CGSU(in_channel=out_channel)
+            Conv1_DOWN(in_channel=in_channel),
+            Conv1(in_channel=out_channel),
+            Conv1(in_channel=out_channel)
         )
         self.conv3 = Conv_BN_ReLU(in_channel=out_channel, out_channel=out_channel, kernel=1, stride=1)
         self.cbam = CBAM(in_channel=out_channel)
@@ -229,7 +228,7 @@ class Encoder_Block(nn.Module):
 #
 #         assert out_channel == in_channel * 2, 'the out_channel is not in_channel*2 in encoder block'
 #         self.conv1 = nn.Sequential(
-#             CGSU_DOWN(in_channel=in_channel),
+#             Conv1_DOWN(in_channel=in_channel),
 #             Ghost_conv(out_channel, out_channel,3, 1,1),
 #             Ghost_conv(out_channel, out_channel,3, 1,1)
 #         )
@@ -277,7 +276,7 @@ class Encoder_lastBlock(nn.Module):
 
         assert out_channel == in_channel * 2, 'the out_channel is not in_channel*2 in encoder block'
         self.conv1 = nn.Sequential(
-            CGSU_DOWN(in_channel=in_channel),
+            Conv1_DOWN(in_channel=in_channel),
             SwinTransformer()
         )
         self.conv3 = Conv_BN_ReLU(in_channel=out_channel, out_channel=out_channel, kernel=1, stride=1)
